@@ -1,0 +1,526 @@
+<!--
+Google IO 2012/2013 HTML5 Slide Template
+
+Authors: Eric Bidelman <ebidel@gmail.com>
+         Luke Mahé <lukem@google.com>
+
+URL: https://code.google.com/p/io-2012-slides
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">-->
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <!--This one seems to work all the time, but really small on ipad-->
+  <!--<meta name="viewport" content="initial-scale=0.4">-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" media="all" href="theme/css/default.css">
+  <link rel="stylesheet" media="all" href="theme/css/additional.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
+  <script data-main="js/slides" src="js/require.js"></script>
+</head>
+<body style="opacity: 0">
+
+<slides class="layout-widescreen">
+  <!--
+  <slide class="logoslide nobackground">
+    <article class="flexbox vcenter">
+      <span><img src="images/google_developers_logo.png"></span>
+    </article>
+  </slide>
+  -->
+
+  <slide class="title-slide segue nobackground">
+    <!--
+    <aside class="gdbar"><img src="images/google_developers_icon_128.png"></aside>
+    -->
+    <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
+    <hgroup class="auto-fadein">
+      <h1 data-config-title><!-- populated from slide_config.json --></h1>
+      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
+      <p data-config-presenter><!-- populated from slide_config.json --></p>
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>自己紹介 &amp; お知らせ</h2>
+    </hgroup>
+    <article>
+      <ul>
+        <li><a href="https://twitter.com/y_yammt">@y_yammt</a></li>
+        <ul>
+          <li>某Web系エンジニア</li>
+        </ul>
+      </ul>
+      <div class="large-spacer">
+        <div class="aa">
+ 　　　､､┯､､<br>
+　　 ﾐ (･)(･)ﾐ　　<span class="reset-font">本スライドは<a href="http://y-yammt.github.io/intro-bayes-kalman-filter">http://y-yammt.github.io/intro-bayes-kalman-filter</a> で見られますぞ、と</span><br>
+　　彡　д　ミ<br>
+　　彡　　/￣￣￣￣/<br>
+＿彡ﾆつ/　 Macc　/＿＿<br>
+　　　＼/＿＿＿＿/ 
+        </div>
+      </div>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>今回の内容</h2>
+    </hgroup>
+    <article>
+      <ul class="build">
+        <li>入門ベイズ統計 第7章「ベイズ更新とカルマン・フィルター」を見ていきます。</li>
+        <ul>
+          <li>7.1 リアル・タイム推定</li>
+          <li>7.2 カルマン・フィルターのモデル</li>
+          <li>7.3 カルマン・フィルターの漸化式</li>
+          <li><span class="gray-out">7.4 シミュレーション例</span> &larr; 省略します</li>
+        </ul>
+        <!--
+        <li class="mid-spacer">また、一部<a href="http://www.amazon.co.jp/dp/4274131491" title="わかりやすいパターン認識">「わかりやすいパターン認識」</a>の内容を参考にしています。</li>
+        -->
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <article class="flexbox vleft">
+      <h2>7.1 リアル・タイム推定</h2>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>リアル・タイム推定とは?</h2>
+    </hgroup>
+    <article>
+      <div class="frame-border" style="margin:auto 0;">
+      時間的に観測される現象と並行しながら「その場(時間)」で推定を行うこと。
+      </div>
+      <ul class="build large-spacer">
+        <li>簡単な例として平均値のリアル・タイム推定を次のスライドで紹介します。</li>
+      </ul> 
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>平均値のリアル・タイム推定</h2>
+    </hgroup>
+    <article>
+      <!-- 環境依存であるので画像に置き換え (´・ω・｀) -->
+      <!--
+      <div>
+       <p style="margin-top:100px;text-align:center;">
+        &#9473;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&nbsp;&#9473;&nbsp;&#9473;&nbsp;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\mathbf{x}_1$&nbsp;&nbsp;&nbsp;&nbsp;$\mathbf{x}_2$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\cdots$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\mathbf{x}_{t-1}$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8658;
+        </p>
+      </div>
+      -->
+      <div style="margin-top:100px;text-align:center;">
+        <img src="images/ts-mean1.png" alt="">
+      </div>
+      <dl style="margin-top:100px;">
+        <dt>$t-1$時点での平均値:</dt>
+        <dd>$$\mathbf{\mu}_{t-1} = \frac{1}{t-1}\sum_{i=1}^{t-1}\mathbf{x}_i$$</dd>
+      </dl>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>平均値のリアル・タイム推定</h2>
+    </hgroup>
+    <article>
+      <!--
+      <ul>
+        <li>$x_t$が観測されたときの平均値を求める。</li>
+      </ul>
+      -->
+      <!-- 環境依存であるので画像に置き換え (´・ω・｀) -->
+      <!--
+      <div>
+        <p style="text-align:center;">
+        &#9473;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&nbsp;&#9473;&nbsp;&#9473;&nbsp;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&#9535;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\mathbf{x}_1$&nbsp;&nbsp;&nbsp;&nbsp;$\mathbf{x}_2$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\cdots$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\mathbf{x}_{t-1}$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="red">$\mathbf{x}_{t}$</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8658;
+        </p>
+      </div>
+      -->
+      <div style="text-align:center;">
+        <img src="images/ts-mean2.png" alt="">
+      </div>
+      <div class="build">
+      $$
+      \begin{split}
+      \mathbf{\mu}_{t} &amp;= \frac{1}{t}\sum_{i=1}^{t}\mathbf{x}_i \\
+                       &amp;= \frac{1}{t} \mathbf{x}_t + \frac{1}{t} \sum_{i=1}^{t-1} \mathbf{x}_i = \frac{1}{t} \mathbf{x}_t + \frac{t-1}{t} \mathbf{\mu}_{t-1} \\
+                       &amp;= \mu_{t-1} + \frac{1}{t} ( \mathbf{x}_t - \mathbf{\mu}_{t-1} )
+      \end{split}
+      $$
+      </div>
+      <div class="frame-border">
+        <span>過去のデータを再計算して平均値を求めなくてもよい。</span>
+      </div>
+    </article>
+  </slide>
+
+
+  <slide>
+    <hgroup>
+      <h2>カルマン・フィルタ</h2>
+    </hgroup>
+    <article>
+      <ul>
+        <li>時系列に対する逐次推定法の一種。</li>
+      </ul>
+
+      <table>
+        <tr>
+          <th>状態</th><td>$\theta_1$</td><td>$\theta_2$</td><td>$\cdots$</td><td>$\theta_{t-1}$</td><td>$\theta_{t}$</td>
+        </tr>
+        <tr>
+          <th>観測値</th><td>$y_1$</td><td>$y_2$</td><td>$\cdots$</td><td>$y_{t-1}$</td><td>$y_{t}$</td>
+        </tr>
+      </table>
+
+      <ul class="large-spacer">
+        <li>状態は観測できず、推定しなければならないことに注意。</li>
+        <li class="mid-spacer">状態と観測値の例:</li>
+        <dl>
+          <dt class="mid-spacer">状態:</dt>
+          <dd>製品の真の不良率</dd>
+          <dt class="mid-spacer">観測値:</dt>
+          <dd>サンプリングによって得られた不良率</dd>
+        </dl>
+      </ul>
+   </article>
+  </slide>
+
+  <slide>
+    <article class="flexbox vleft">
+      <h2>7.2 カルマン・フィルターのモデル</h2>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>カルマン・フィルターの構成</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:200px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>二段構成</li>
+        <ul>
+          <li>システム方程式に従い、1つ前の状態から今の状態を予測する。</li>
+          <li>今の観測値から、今の状態を補正する。</li>
+        </ul>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>カルマン・フィルターの構成 - システム方程式</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>システム方程式</li>
+        <div>
+        $$\theta_t = G_t \theta_{t-1} + w_t$$
+        </div>
+        <dl>
+          <li>$G_t$: (科学的に)すでに知られた量 (例: 物理の運動方程式)。</li>
+          <li>$w_t$: 平均$0$、分散$\tau^2_t$の正規分布に従う。</li>
+        </dl>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>カルマン・フィルターの構成 - 観測方程式</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>観測方程式</li>
+        <div>
+        $$y_t = F_t \theta_{t-1} + v_t$$
+        </div>
+        <dl>
+          <li>$F_t$: (科学的に)すでに知られた量 (例: 物理の運動方程式)。</li>
+          <li>$v_t$: 平均$0$、分散$\sigma^2_t$の正規分布に従う。</li>
+        </dl>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <article class="flexbox vleft">
+      <h2>7.3 カルマン・フィルターの漸化式</h2>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出に入る前に・・・</h2>
+    </hgroup>
+    <article>
+      <ul>
+        <li>以下の公式は証明なしで使います (PRML 2.3を見てね)</li>
+      </ul>
+      <div class="frame-border">
+        <div>
+          <span>$\mathbf{x}$についての周辺正規分布と、$\mathbf{x}$が与えられた下での$\mathbf{y}$について条件付き正規分布が次の形式で与えられている。</span><br>
+          $$p(\mathbf{x}) = \mathcal{N}(\mathbf{x} | \mu, \Lambda^{-1})$$
+          $$p(\mathbf{y} | \mathbf{x}) = \mathcal{N}(\mathbf{y} | \mathbf{A} \mathbf{x} + \mathbf{b}, \mathbf{L}^{-1})$$
+          <span>$\mathbf{y}$についての周辺分布は以下のようになる。<span>
+          $$p(\mathbf{y}) = \mathcal{N}(\mathbf{y} | \mathbf{A} \mathbf{\mu} + \mathbf{b}, \mathbf{L}^{-1} + \mathbf{A} \mathbf{\Lambda}^{-1} \mathbf{A}')$$
+        </div>
+      </div>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出に入る前に・・・</h2>
+    </hgroup>
+    <article>
+      <ul>
+        <li>1変数の正規分布ですと次のようになります。</li>
+      </ul>
+      <div class="frame-border">
+        <div>
+          <span>$x$についての周辺正規分布と、$x$が与えられた下での$y$について条件付き正規分布が次の形式で与えられている。</span><br>
+          $$p(x) = \mathcal{N}(x | \mu, \sigma^2)$$
+          $$p(y | x) = \mathcal{N}(y | a x + b, \tau^2)$$
+          <span>$y$についての周辺分布は以下のようになる。<span>
+          $$p(y) = \mathcal{N}(y | a \mu + b, \tau^2 + a \sigma^2)$$
+        </div>
+      </div>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>とりあえず以下の導出をします。</li>
+        <ul>
+          <li>システム方程式からの過去の状態から現在の状態への予測</li>
+        </ul>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 過去の状態から現在の状態</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>$(t-1)$時点での状態$\theta_{t-1}$の推定値が$\hat{\theta}_{t-1}$であるとします。また、ベイズ的に$\theta_{t-1}$の真の値はこれを中心とした分散$\delta^2_{t-1}$の正規分布に従うとします。つまり、
+        $$\mathcal{N}(\theta_{t-1} | \hat{\theta}_{t-1}, \delta^2_{t-1})$$
+        <div class="build">
+          <div style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="red">$p(\theta_{t-1})$</span>
+          </div>
+        </div></li>
+        <li>$\hat{\theta}_{t-1}$にしても$\delta^2_{t-1}$にしても初期値が決まれば、(後々の導出で)連鎖的に決めることができることがわかるので、特に気にせず進めていきます。</li>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 過去の状態から現在の状態</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>システム方程式の定義に戻ると $\theta_t = G_t \theta_{t-1} + w_t$</li>
+        <li>$w_t$: 平均$0$、分散$\tau^2_t$の正規分布に従うので、別の書き方をすると、
+        $$\mathcal{N}(\theta_t | G_t \theta_{t-1}, \tau^2_t)$$</li>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 過去の状態から現在の状態</h2>
+    </hgroup>
+    <article>
+      <ul class="large-spacer">
+        <li>$(t-1)$時点での状態$\theta_{t-1}$は、
+        $$\mathcal{N}(\theta_{t-1} | \hat{\theta}_{t-1}, \delta^2_{t-1})$$
+        <div>
+          <div style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="red">$p(\theta_{t-1})$</span>
+          </div>
+        </div></li>
+        <li>$\theta_{t-1}$が与えられた場合の、$y_t$を観測する前の$\theta_t$は、
+        $$\mathcal{N}(\theta_t | G_t \theta_{t-1}, \tau^2_t)$$
+        <div style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="red">$p(\theta_t | \theta_{t-1})$</span>
+        </div>
+        <li>以上より、以下の関係を得ます。
+        $$\mathcal{N}(\theta_t | G_t \hat{\theta}_{t-1}, G^2_t \delta^2_{t-1} + \tau^2_t)$$</li>
+          <div style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="red">$p(\theta_t)$</span>
+          </div>
+        </li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 過去の状態から現在の状態</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>システム方程式から得られる代表値(平均値)で一点先予測できるのでは?</li>
+        <ul class="build">
+          <li>$\tilde{\theta}_t \equiv G_t \hat{\theta}_{t-1}$ のように。</li>
+          <li>推定はできるが、いまだ$(t-1)$時点であって、本格的な推定には$t$時点の観測値$y_t$を待たねばならない。</li>
+        </ul>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 観測値からの現在の状態の補正</h2>
+    </hgroup>
+    <article>
+      <div style="text-align:center;">
+        <img src="images/kalman-filter-flow.png" style="height:150px;width:auto;" alt="カルマン・フィルターの構成"><br>
+      </div>
+      <ul class="large-spacer">
+        <li>$t$時点で観測値$y_t$が得られたとします。</li>
+        <li>この値は一つ前の状態からシステム方程式と観測方程式から得られる代表値(平均値):$$\tilde{y}_t \equiv F_t \tilde{\theta}_t = F_t G_t \tilde{\theta}_{t-1}$$とは異なります(が固定された推定値としては使っている)。</li>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 観測値からの現在の状態の補正</h2>
+    </hgroup>
+    <article>
+      <ul class="large-spacer">
+        <li>$y_t$と$\tilde{y}_t$の差は、$$e_t \equiv y_t - \tilde{y}_t = F_t \theta_t + v_t - F_t G_t \tilde{\theta}_{t-1} = F_t (\theta_t - G_t \tilde{\theta}_{t - 1}) + v_t$$</li>
+        <ul>
+          <li>$\tilde{y}_t$を固定値と見なしていることに注意。</li>
+        </ul>
+        <li>上の式は以下のように書くこともできます。$$\mathcal{N}(e_t | F_t (\theta_t - G_t \hat{\theta}_{t-1}), \sigma^2_t)$$
+        <div class="build">
+          <div style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... <span class="red">$p(e_t | \theta_{t})$</span>
+          </div>
+        </div></li>
+        <li><div class="build"><span>$e_t$の値はすでにわかっているので、知りたいのは $p(\theta_{t} | e_t)$ &rarr; 正規分布のベイズ更新則</span></div></li>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 観測値からの現在の状態の補正</h2>
+    </hgroup>
+    <article>
+      <ul class="build large-spacer">
+        <li>$p(\theta_{t} | e_t) \propto p(e_t | \theta_t) p(\theta_t)$</li>
+        <li>&rarr; $w(\theta_{t} | e_t) \propto p(e_t | \theta_t) w(\theta_t)$</li>
+        <ul>
+          <li>$p(\theta_t)$ のところを、 $y_t$を見る前の$\theta_t$の確率に置き換えました。</li>
+          <li>$w(\theta_{t} | e_t)$の求め方については第1章の(1.8.11)を参照してください。</li>
+        </ul>
+      </ul>
+      
+      <ul class="build large-spacer">
+        <li>[注意点]<br>$p(e_t | \theta_t)= \mathcal{N}(e_t | F_t (\theta_t - G_t \hat{\theta}_{t-1}), \sigma^2_t)$ については、$\theta_t$ に係数 $F_t$ がついていますので、ベイズ更新を適用する場合は、変数変換 $e'_t = \frac{e_t}{F_t} + G_t \hat{\theta}_{t-1}$ を施してから計算する必要があります。</li>
+      </ul>
+     <footer class="source">「入門ベイズ統計」図7.5より</footer>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>導出 - 観測値からの現在の状態の補正の結果</h2>
+    </hgroup>
+    <article>
+      <p>結果は以下のとおり。</p>
+      $$\hat{\theta}_t = G_t \hat{\theta}_{t-1} + \frac{\frac{F_t}{\sigma^2_t}}{ \frac{1}{G^2_t \delta^2_{t-1} + \tau^2_t} + \frac{F^2_t}{\sigma^2_t}} \cdot e_t$$<br>
+      $$\delta^2_t = \frac{1}{ \frac{1}{G^2_t \delta^2_{t-1} + \tau^2_t} + \frac{F^2_t}{\sigma^2_t} }$$
+      <ul>
+        <li>もう少し簡単に書くこともできます(p.126)が省略します。</li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>まとめ</h2>
+    </hgroup>
+    <article>
+      <ul class="build">
+        <li>入門ベイズ統計 第7章「ベイズ更新とカルマン・フィルター」を見ました。</li>
+        <li>ちょっと導出が煩雑でしたね。</li>
+        <li>なお、平均値のリアルタイム推定はオンライン学習(パーセプトロンとか)の更新分の平均化にも使えますので押さえておくとよいかもしれません。</li>
+      </ul>
+    </article>
+  </slide>
+ 
+  <slide class="backdrop"></slide>
+</slides>
+
+<script>
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-XXXXXXXX-1']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>
